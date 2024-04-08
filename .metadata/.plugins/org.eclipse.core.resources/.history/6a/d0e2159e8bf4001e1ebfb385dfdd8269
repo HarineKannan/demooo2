@@ -1,0 +1,42 @@
+package org.example;
+
+import java.io.IOException;
+import java.util.HashMap;
+
+public class Test {
+    public native Object[] getArray(String neededLog);
+
+    static {
+        System.load("C:\\Users\\harine-pt7602\\source\\repos\\test\\x64\\Debug\\test.dll");
+    }
+
+    public static void main(String[] args) throws IOException,NullPointerException {
+        String neededLog="Application";
+        int n=0;
+        Test sample = new Test();
+        Object[] result = sample.getArray(neededLog);
+        String latestTimestamp = "";
+        for (Object obj : result) {
+            if (obj instanceof HashMap) {
+                HashMap<String, String> event = (HashMap<String, String>) obj;
+                for (String key : event.keySet()) {
+                    if (key.equals("Time Generated")) {
+                        String timestamp = event.get(key);
+                        if (timestamp.compareTo(latestTimestamp) > 0) {
+                            latestTimestamp = timestamp;
+                        }
+                    }
+                    System.out.println(key + ": " + event.get(key));
+                }
+                System.out.print("count" + n++);
+            } else {
+                System.out.println("Error");
+            }
+        }
+        System.out.println("Latest TimeGenerated timestamp: " + latestTimestamp);
+
+//        InsertIntoElasticsearch.insertion(result,true,true,true,false);
+
+
+    }
+}
