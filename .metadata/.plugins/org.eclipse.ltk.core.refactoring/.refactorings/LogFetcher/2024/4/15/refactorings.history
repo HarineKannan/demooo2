@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<session version="1.0">
-<refactoring comment="Rename compilation unit &apos;org.example.bhgh.java&apos; to &apos;Search.java&apos;&#x0D;&#x0A;- Original project: &apos;LogFetcher&apos;&#x0D;&#x0A;- Original element: &apos;org.example.bhgh.java&apos;&#x0D;&#x0A;- Renamed element: &apos;org.example.Search.java&apos;" description="Rename compilation unit &apos;bhgh.java&apos;" flags="2" id="org.eclipse.jdt.ui.rename.compilationunit" input="/src\/main\/java=/optional=/true=/=/maven.pomderived=/true=/&lt;org.example{bhgh.java" name="Search.java" references="false" stamp="1712572039849" version="1.0"/>
-</session>
