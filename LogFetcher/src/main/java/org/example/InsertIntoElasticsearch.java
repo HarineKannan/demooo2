@@ -56,6 +56,13 @@ public class InsertIntoElasticsearch {
                     event.put("message", eventData.get("Message"));
                     event.put("eventcode", eventData.get("Event Code"));
                     event.put("timegenerated", eventData.get("Time Generated"));
+                    event.put("timewritten", eventData.get("Time Written"));
+                    event.put("category", eventData.get("Category"));
+                    event.put("recordnumber", eventData.get("Record Number"));
+                    event.put("user", eventData.get("User"));
+                    event.put("eventidentifier", eventData.get("Event Identifier"));
+                    event.put("computername", eventData.get("Computer Name"));
+
                    
                     IndexRequest request = new IndexRequest(indexName).source(event);
                     bulkRequest.add(request);
@@ -102,10 +109,16 @@ public class InsertIntoElasticsearch {
                     HashMap<String, String> eventData = (HashMap<String, String>) obj;
                     String eventTimestamp = eventData.get("Time Generated");
                     if (eventTimestamp != null && eventTimestamp.compareTo(latestTimestamp) > 0) {
-                    event.put("sourcename", eventData.get("Source Name"));
+                    	event.put("sourcename", eventData.get("Source Name"));
                         event.put("message", eventData.get("Message"));
                         event.put("eventcode", eventData.get("Event Code"));
                         event.put("timegenerated", eventData.get("Time Generated"));
+                        event.put("timewritten", eventData.get("Time Written"));
+                        event.put("category", eventData.get("Category"));
+                        event.put("recordnumber", eventData.get("Record Number"));
+                        event.put("user", eventData.get("User"));
+                        event.put("eventidentifier", eventData.get("Event Identifier"));
+                        event.put("computername", eventData.get("Computer Name"));
                         IndexRequest request = new IndexRequest(indexName).source(event);
                         bulkRequest.add(request);
                         c++;

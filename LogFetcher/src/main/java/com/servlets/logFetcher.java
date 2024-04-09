@@ -1,9 +1,11 @@
 package com.servlets;
 
 import org.example.InsertIntoElasticsearch;
-
+import org.example.*;
 import java.io.*;
 import java.sql.*;
+import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -31,33 +33,43 @@ public class logFetcher extends HttpServlet {
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        response.setContentType("text/html");
+        response.setContentType("application/json");
+        response.setHeader("Access-Control-Allow-Origin", "http://localhost:4200");
+        response.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+        response.setHeader("Access-Control-Allow-Headers", "Content-Type");
+        response.setHeader("Access-Control-Allow-Credentials", "true");
+        JSONObject jsonResponse = new JSONObject();
 
         PrintWriter out = response.getWriter();
-        out.println("<html><body>");
 
         try {
-            Class.forName("org.postgresql.Driver");
-            Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD);
-            out.println("<h3>Connected to PostgreSQL</h3>");
-            Statement st = connection.createStatement();
-            String sql = "select * from logfetch";
-            ResultSet rs = st.executeQuery(sql);
-            while (rs.next()) {
-                out.println(rs.getInt("id"));
-                out.println(rs.getString("logtype"));
-                out.println(rs.getString("updatedtime"));
+            String neededField = request.getParameter("neededfield");
+            String searchQuery = request.getParameter("searchquery");
+
+            if (neededField != null && !neededField.isEmpty() && searchQuery != null && !searchQuery.isEmpty()) {
+                try {
+//                    String searchResults = Search.performElasticsearchSearch(neededField, searchQuery);
+                	List<Map<String, Object>> searchResults = Search.performElasticsearchSearch(neededField, searchQuery);
+                    jsonResponse.put("searchResults", searchResults);
+                    
+
+                    out.println(jsonResponse.toString()); 
+                } catch (IOException e) {
+                    out.println("Error occurred during search" + e.getMessage());
+                }
+            } else {
+                out.println("No needed field or search query specified");
             }
-            connection.close();
-        } catch (SQLException e) {
-            out.println("<h3>Error in connecting to PostgreSQL</h3>");
-            e.printStackTrace();
+//
+//            out.println("Needed Field: " + neededField );
+//            out.println("Search Query: " + searchQuery);
         } catch (Exception e) {
+            out.println("Internal server error" + e.getMessage());
             e.printStackTrace();
         }
-
-        out.println("</body></html>");
     }
+
+
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -90,8 +102,10 @@ public class logFetcher extends HttpServlet {
                         statement.setString(1, logType);
                         ResultSet rs = statement.executeQuery();
                         if (rs.next()) {
+                        	
                             String ut = rs.getString("updatedtime");
                             out.print(ut);
+
                            InsertIntoElasticsearch.insertionFrom(logType, ut);
                            String lt = InsertIntoElasticsearch.latestTimestamp(logType);
                            out.print(lt);
@@ -122,7 +136,7 @@ public class logFetcher extends HttpServlet {
                             }
                            
                         }
-                   
+                 
                  
                     }
                 } else {
@@ -138,41 +152,37 @@ public class logFetcher extends HttpServlet {
             e.printStackTrace();
         }
     }
-   
 }
+
+
 //protected void doGet(HttpServletRequest request, HttpServletResponse response)
 //throws ServletException, IOException {
-//response.setContentType("application/json");
-//response.setCharacterEncoding("UTF-8");
+//response.setContentType("text/html");
 //
 //PrintWriter out = response.getWriter();
+//out.println("<html><body>");
 //
 //try {
-//String searchQuery = request.getParameter("q");
-////String searchQuery = "16384";
-//
-//if (searchQuery != null && !searchQuery.isEmpty()) {
-//  SearchRequest searchRequest = new SearchRequest("application");
-//  SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-//  searchSourceBuilder.query(QueryBuilders.matchQuery("eventcode", searchQuery));
-//  searchRequest.source(searchSourceBuilder);
-//
-//  SearchHit[] hits = esClient.search(searchRequest, RequestOptions.DEFAULT).getHits().getHits();
-//
-//  JSONArray jsonArray = new JSONArray();
-//  for (SearchHit hit : hits) {
-//      JSONObject jsonObject = new JSONObject(hit.getSourceAsString());
-//      jsonArray.put(jsonObject);
-//  }
-//  out.print(jsonArray.toString());
-//} else {
-//  out.println("<p>No search query specified.</p>");
+//Class.forName("org.postgresql.Driver");
+//Connection connection = DriverManager.getConnection(DB_URL, DB_USERNAME, DB_PASSWORD);
+//out.println("<h3>Connected to PostgreSQL</h3>");
+//Statement st = connection.createStatement();
+//String sql = "select * from logfetch";
+//ResultSet rs = st.executeQuery(sql);
+//while (rs.next()) {
+//  out.println(rs.getInt("id"));
+//  out.println(rs.getString("logtype"));
+//  out.println(rs.getString("updatedtime"));
 //}
+//connection.close();
+//} catch (SQLException e) {
+//out.println("<h3>Error in connecting to PostgreSQL</h3>");
+//e.printStackTrace();
 //} catch (Exception e) {
-//JSONObject jsonResponse = new JSONObject();
-//jsonResponse.put("status", "error");
-//jsonResponse.put("message", e.getMessage());
-//out.println(jsonResponse.toString());
 //e.printStackTrace();
 //}
+//
+//out.println("</body></html>");
 //}
+
+   
