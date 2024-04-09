@@ -1,0 +1,39 @@
+package org.example;
+
+import java.io.IOException;
+import java.util.HashMap;
+
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
+
+
+public class Search{
+private String performElasticsearchSearch(String neededField, String searchQuery) throws IOException {
+        StringBuilder searchResults = new StringBuilder();
+
+        // Call the search method from SearchQuery class
+        RestHighLevelClient client = new RestHighLevelClient(
+                RestClient.builder(new HttpHost("localhost", 9200, "http")));
+
+        try {
+            SearchRequest searchRequest = new SearchRequest("logs");
+            SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+            sourceBuilder.size(10);
+            sourceBuilder.query(QueryBuilders.wildcardQuery(neededField, "*" + searchQuery + "*"));
+            sourceBuilder.fetchSource(new String[]{"eventcode", "timegenerated", "sourcename"}, null);
+            searchRequest.source(sourceBuilder);
+
+            SearchResponse searchResponse = client.search(searchRequest, RequestOptions.DEFAULT);
+
+            searchResponse.getHits().forEach(hit -> {
+                searchResults.append(hit.getSourceAsString()).append("<br>");
+            });
+        } finally {
+            client.close();
+        }
+
+        return searchResults.toString();
+    }
+}
+}

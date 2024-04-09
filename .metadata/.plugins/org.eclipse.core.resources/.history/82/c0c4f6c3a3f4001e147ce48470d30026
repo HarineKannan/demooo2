@@ -1,0 +1,54 @@
+package org.example;
+import org.apache.http.HttpHost;
+import org.elasticsearch.action.bulk.BulkRequest;
+import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.index.IndexRequest;
+import org.elasticsearch.client.RequestOptions;
+import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestHighLevelClient;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+
+public class InsertIntoElasticsearch {
+    public static void insertion(Object[] result, boolean includeEventCode,boolean includeSourcename , boolean includeTimestamp, boolean includeMessage) throws IOException {
+        RestHighLevelClient client = new RestHighLevelClient(
+                RestClient.builder(new HttpHost("localhost", 9200, "http")));
+
+        String indexName = "collectedlogs";
+
+        int c=0;
+        try {
+            BulkRequest bulkRequest = new BulkRequest();
+
+            for (Object obj : result) {
+                Map<String, String> event = new HashMap<>();
+
+                if (obj instanceof HashMap) {
+                    HashMap<String, String> eventData = (HashMap<String, String>) obj;
+                    for (String key : eventData.keySet()) {
+                        event.put(key, eventData.get(key));
+                    }
+                    c++;
+                } else {
+                    System.out.println("Error");
+                }
+
+                IndexRequest request = new IndexRequest(indexName).source(event);
+                bulkRequest.add(request);
+            }
+
+            BulkResponse bulkResponse = client.bulk(bulkRequest, RequestOptions.DEFAULT);
+
+            if (bulkResponse.hasFailures()) {
+                System.err.println("Error indexing documents: " + bulkResponse.buildFailureMessage());
+            } else {
+                System.out.println("Documents indexed successfully.");
+            }
+        } catch (IOException e) {
+            System.err.println("Error indexing documents "+c );
+        } finally {
+            client.close();
+        }
+    }
+}
